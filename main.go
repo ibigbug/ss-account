@@ -24,5 +24,5 @@ func main() {
 	if *bind == "" {
 		*bind = "127.0.0.1:9000"
 	}
-	raven.CapturePanic(server.Start(*bind), nil)
+	raven.CaptureError(server.Start(*bind), nil)
 }
