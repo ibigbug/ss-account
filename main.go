@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 
+	_ "net/http/pprof"
+
 	raven "github.com/getsentry/raven-go"
 	"github.com/ibigbug/ss-account/config"
 	"github.com/ibigbug/ss-account/server"
