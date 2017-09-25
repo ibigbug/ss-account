@@ -91,7 +91,7 @@ func (m *Manager) Start() error {
 		for {
 			c, err := l.Accept()
 			atomic.AddInt64(&m.NumConnCreated, 1)
-
+			connConnectCounter.WithLabelValues(m.getMetricsTags()...).Inc()
 			if err != nil {
 				log.Println(err)
 				if nerr, ok := err.(net.Error); ok {
@@ -126,12 +126,13 @@ func (m *Manager) pipeWithMetrics(bc, c net.Conn) {
 	// c -> bc
 	b1 := make([]byte, 512)
 	go func() {
-		defer m.closeConn(c)
+		defer c.Close()
 		defer bc.Close()
 		for {
 			n, err := c.Read(b1)
 			if n > 0 {
 				atomic.AddInt64(&m.BytesUpload, int64(n))
+				bytesUploadVec.WithLabelValues(m.getMetricsTags()...).Observe(float64(n))
 				bc.Write(b1[:n])
 			}
 			if err != nil {
@@ -149,6 +150,7 @@ func (m *Manager) pipeWithMetrics(bc, c net.Conn) {
 			if n > 0 {
 				atomic.AddInt64(&m.BytesDownload, int64(n))
 				c.Write(b2[:n])
+				bytesDownloadVec.WithLabelValues(m.getMetricsTags()...).Observe(float64(n))
 			}
 			if err != nil {
 				break
@@ -159,5 +161,14 @@ func (m *Manager) pipeWithMetrics(bc, c net.Conn) {
 
 func (m *Manager) closeConn(c net.Conn) {
 	atomic.AddInt64(&m.NumConnClosed, int64(1))
+	connClosedCounter.WithLabelValues(m.getMetricsTags()...).Inc()
 	c.Close()
+}
+
+func (m *Manager) getMetricsTags() []string {
+	return []string{
+		m.Username,
+		fmt.Sprintf("%d", m.Port),
+		m.Backend,
+	}
 }
