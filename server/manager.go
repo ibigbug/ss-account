@@ -7,10 +7,19 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
+)
+
+type Direction int
+
+const (
+	DirectionUpload Direction = iota
+	DirectionDownload
 )
 
 // DefaultManaged is default user manager
 var DefaultManaged = &Managed{}
+var DefaultStorage = NewAsyncStorage()
 
 // GetManagerByUsername ...
 func GetManagerByUsername(username string) *Manager {
@@ -121,6 +130,25 @@ func (m *Manager) Stop() {
 	m.l.Close()
 }
 
+// Use metrics and store the user usage
+// upload/download
+func (m *Manager) Use(n int, dir Direction) {
+	if dir == DirectionUpload {
+		atomic.AddInt64(&m.BytesUpload, int64(n))
+		bytesUploadVec.WithLabelValues(m.getMetricsTags()...).Observe(float64(n))
+	} else {
+		atomic.AddInt64(&m.BytesDownload, int64(n))
+		bytesDownloadVec.WithLabelValues(m.getMetricsTags()...).Observe(float64(n))
+	}
+
+	DefaultStorage.Write(&Record{
+		Username:  m.Username,
+		BytesUsed: n,
+		Dir:       dir,
+		Time:      time.Now().Unix(),
+	})
+}
+
 // bc for backend conn, c for client conn
 func (m *Manager) pipeWithMetrics(bc, c net.Conn) {
 	// c -> bc
@@ -131,8 +159,7 @@ func (m *Manager) pipeWithMetrics(bc, c net.Conn) {
 		for {
 			n, err := c.Read(b1)
 			if n > 0 {
-				atomic.AddInt64(&m.BytesUpload, int64(n))
-				bytesUploadVec.WithLabelValues(m.getMetricsTags()...).Observe(float64(n))
+				m.Use(n, DirectionUpload)
 				bc.Write(b1[:n])
 			}
 			if err != nil {
@@ -148,9 +175,8 @@ func (m *Manager) pipeWithMetrics(bc, c net.Conn) {
 		for {
 			n, err := bc.Read(b2)
 			if n > 0 {
-				atomic.AddInt64(&m.BytesDownload, int64(n))
+				m.Use(n, DirectionDownload)
 				c.Write(b2[:n])
-				bytesDownloadVec.WithLabelValues(m.getMetricsTags()...).Observe(float64(n))
 			}
 			if err != nil {
 				break
