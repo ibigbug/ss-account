@@ -8,6 +8,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/ibigbug/ss-account/database"
 )
 
 type Direction int
@@ -19,7 +21,7 @@ const (
 
 // DefaultManaged is default user manager
 var DefaultManaged = &Managed{}
-var DefaultStorage = NewAsyncStorage()
+var DefaultStorage = database.NewAsyncStorage()
 
 // GetManagerByUsername ...
 func GetManagerByUsername(username string) *Manager {
@@ -118,7 +120,6 @@ func (m *Manager) Start() error {
 				continue
 			}
 
-			log.Println("pipe", m.Port, m.Backend)
 			m.pipeWithMetrics(bc, c)
 		}
 	}()
@@ -141,10 +142,10 @@ func (m *Manager) Use(n int, dir Direction) {
 		bytesDownloadVec.WithLabelValues(m.getMetricsTags()...).Observe(float64(n))
 	}
 
-	DefaultStorage.Write(&Record{
+	DefaultStorage.Write(&database.Record{
 		Username:  m.Username,
 		BytesUsed: n,
-		Dir:       dir,
+		Dir:       int(dir),
 		Time:      time.Now().Unix(),
 	})
 }

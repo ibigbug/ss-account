@@ -1,13 +1,19 @@
-package server
+package database
 
 import "context"
+import "fmt"
 
 type Record struct {
 	Username  string
 	BytesUsed int
-	Dir       Direction
+	Dir       int
 	Time      int64
 }
+
+func (r *Record) String() string {
+	return fmt.Sprintf("%s:%v:%d:%d", r.Username, r.Dir, r.BytesUsed, r.Time)
+}
+
 type Storage interface {
 	Write(r *Record)
 	Flush()
@@ -20,10 +26,12 @@ type Database interface {
 func NewAsyncStorage() *AsyncStorage {
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	s := AsyncStorage{
-		pending:    make(chan *Record),
+		pending:    make(chan *Record, 100),
 		ctx:        ctx,
 		cancelFunc: cancelFunc,
+		db:         &StdoutDatabase{},
 	}
+	s.StartFlush()
 	return &s
 }
 
@@ -50,7 +58,6 @@ func (s *AsyncStorage) StartFlush() {
 				s.db.Write(r)
 			default:
 			}
-
 		}
 	}()
 }
