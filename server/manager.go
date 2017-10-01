@@ -153,7 +153,7 @@ func (m *Manager) Use(n int, dir Direction) {
 // bc for backend conn, c for client conn
 func (m *Manager) pipeWithMetrics(bc, c net.Conn) {
 	// c -> bc
-	b1 := make([]byte, 512)
+	b1 := make([]byte, 1024*1024)
 	go func() {
 		defer c.Close()
 		defer bc.Close()
@@ -169,7 +169,7 @@ func (m *Manager) pipeWithMetrics(bc, c net.Conn) {
 		}
 	}()
 
-	b2 := make([]byte, 512)
+	b2 := make([]byte, 1024*1024)
 	go func() {
 		defer m.closeConn(c)
 		defer bc.Close()
