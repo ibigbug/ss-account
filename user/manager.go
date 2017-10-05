@@ -1,4 +1,4 @@
-package server
+package user
 
 import (
 	"fmt"
@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/ibigbug/ss-account/database"
+	"github.com/ibigbug/ss-account/metrics"
 )
 
 type Direction int
@@ -18,10 +19,6 @@ const (
 	DirectionUpload Direction = iota
 	DirectionDownload
 )
-
-// DefaultManaged is default user manager
-var DefaultManaged = &Managed{}
-var DefaultStorage = database.NewAsyncStorage()
 
 // GetManagerByUsername ...
 func GetManagerByUsername(username string) *Manager {
@@ -84,7 +81,7 @@ func (m *Manager) String() string {
 	return fmt.Sprintf("%s,%d,%s,%d,%d,%d,%d", m.Username, m.Port, m.Backend, m.NumConnCreated, m.NumConnClosed, m.BytesUpload, m.BytesDownload)
 }
 
-// Bind ...
+// Bind creates a port binding and username in database
 func (m *Manager) Bind() error {
 	return nil
 }
@@ -102,7 +99,7 @@ func (m *Manager) Start() error {
 		for {
 			c, err := l.Accept()
 			atomic.AddInt64(&m.NumConnCreated, 1)
-			connConnectCounter.WithLabelValues(m.getMetricsTags()...).Inc()
+			metrics.ConnConnectCounter.WithLabelValues(m.getMetricsTags()...).Inc()
 			if err != nil {
 				log.Println(err)
 				if nerr, ok := err.(net.Error); ok {
@@ -136,10 +133,10 @@ func (m *Manager) Stop() {
 func (m *Manager) Use(n int, dir Direction) {
 	if dir == DirectionUpload {
 		atomic.AddInt64(&m.BytesUpload, int64(n))
-		bytesUploadVec.WithLabelValues(m.getMetricsTags()...).Observe(float64(n))
+		metrics.BytesUploadVec.WithLabelValues(m.getMetricsTags()...).Observe(float64(n))
 	} else {
 		atomic.AddInt64(&m.BytesDownload, int64(n))
-		bytesDownloadVec.WithLabelValues(m.getMetricsTags()...).Observe(float64(n))
+		metrics.BytesDownloadVec.WithLabelValues(m.getMetricsTags()...).Observe(float64(n))
 	}
 
 	DefaultStorage.Write(&database.Record{
@@ -188,7 +185,7 @@ func (m *Manager) pipeWithMetrics(bc, c net.Conn) {
 
 func (m *Manager) closeConn(c net.Conn) {
 	atomic.AddInt64(&m.NumConnClosed, int64(1))
-	connClosedCounter.WithLabelValues(m.getMetricsTags()...).Inc()
+	metrics.ConnClosedCounter.WithLabelValues(m.getMetricsTags()...).Inc()
 	c.Close()
 }
 

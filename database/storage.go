@@ -1,35 +1,14 @@
 package database
 
 import "context"
-import "fmt"
 
-type Record struct {
-	Username  string
-	BytesUsed int
-	Dir       int
-	Time      int64
-}
-
-func (r *Record) String() string {
-	return fmt.Sprintf("%s:%v:%d:%d", r.Username, r.Dir, r.BytesUsed, r.Time)
-}
-
-type Storage interface {
-	Write(r *Record)
-	Flush()
-}
-
-type Database interface {
-	Write(r *Record)
-}
-
-func NewAsyncStorage() *AsyncStorage {
+func NewAsyncStorage(db Database) *AsyncStorage {
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	s := AsyncStorage{
 		pending:    make(chan *Record, 100),
 		ctx:        ctx,
 		cancelFunc: cancelFunc,
-		db:         &StdoutDatabase{},
+		db:         db,
 	}
 	//	s.StartFlush()
 	return &s
@@ -44,6 +23,10 @@ type AsyncStorage struct {
 
 func (s *AsyncStorage) Write(r *Record) {
 	//	s.pending <- r
+}
+
+func (s *AsyncStorage) BindPort(b *Binding) {
+	s.db.BindPort(b)
 }
 
 // StartFlush not goroutine safe

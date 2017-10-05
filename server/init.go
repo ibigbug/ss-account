@@ -8,6 +8,5 @@ func init() {
 	http.HandleFunc("/deregister", deregisterHandler)
 	http.HandleFunc("/usage", allManaged)
 
-	prometheus.MustRegister(connConnectCounter, connClosedCounter, bytesDownloadVec, bytesUploadVec)
 	http.Handle("/metrics", prometheus.Handler())
 }

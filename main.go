@@ -17,10 +17,20 @@ func init() {
 
 var bind = flag.String("bind", "0.0.0.0:9000", "management server listening address")
 var portRange = flag.String("port-range", "30000-40000", "accounting port range, e.g: 30000-40000")
+var redisHost = flag.String("redis-host", "localhost", "redis host")
+var redisPort = flag.String("redis-port", "6379", "redis port")
+var redisPass = flag.String("redis-pass", "", "redis password")
+var redisDB = flag.Int("redis-db", 0, "redis database")
 
 func main() {
 	flag.Parse()
-	config.LoadFromFlags(*portRange)
+	config.LoadFromFlags(
+		*redisHost,
+		*redisPort,
+		*redisPass,
+		*redisDB,
+		*portRange,
+	)
 	config.LoadFromEnv()
 
 	if *bind == "" {

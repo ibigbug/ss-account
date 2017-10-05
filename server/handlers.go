@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/ibigbug/ss-account/user"
 )
 
 func registerHandler(w http.ResponseWriter, r *http.Request) {
@@ -15,7 +17,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		port = p
 	}
 
-	if port, err := AddOneUser(backend, username, port); err != nil {
+	if port, err := user.AddOneUser(backend, username, port); err != nil {
 		w.WriteHeader(http.StatusPaymentRequired)
 		w.Write([]byte(err.Error()))
 	} else {
@@ -25,7 +27,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 
 func deregisterHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
-	m := GetManagerByUsername(username)
+	m := user.GetManagerByUsername(username)
 	if m == nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		w.Write([]byte("no such user"))
@@ -33,10 +35,10 @@ func deregisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	m.Stop()
-	DefaultManaged.Remove(m)
+	user.DefaultManaged.Remove(m)
 	w.WriteHeader(http.StatusNoContent)
 }
 
 func allManaged(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(DefaultManaged.String()))
+	w.Write([]byte(user.DefaultManaged.String()))
 }

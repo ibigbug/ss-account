@@ -1,4 +1,4 @@
-package server
+package metrics
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
@@ -10,7 +10,7 @@ var tags = []string{
 	"backend",
 }
 
-var connConnectCounter = prometheus.NewCounterVec(
+var ConnConnectCounter = prometheus.NewCounterVec(
 	prometheus.CounterOpts{
 		Name: "connection_created_total",
 		Help: "A counter for connection created",
@@ -18,7 +18,7 @@ var connConnectCounter = prometheus.NewCounterVec(
 	tags,
 )
 
-var connClosedCounter = prometheus.NewCounterVec(
+var ConnClosedCounter = prometheus.NewCounterVec(
 	prometheus.CounterOpts{
 		Name: "connection_closed_total",
 		Help: "A counter for connection closed",
@@ -26,7 +26,7 @@ var connClosedCounter = prometheus.NewCounterVec(
 	tags,
 )
 
-var bytesUploadVec = prometheus.NewHistogramVec(
+var BytesUploadVec = prometheus.NewHistogramVec(
 	prometheus.HistogramOpts{
 		Name:    "uploaded_bytes",
 		Help:    "Bytes uploaded",
@@ -35,7 +35,7 @@ var bytesUploadVec = prometheus.NewHistogramVec(
 	tags,
 )
 
-var bytesDownloadVec = prometheus.NewHistogramVec(
+var BytesDownloadVec = prometheus.NewHistogramVec(
 	prometheus.HistogramOpts{
 		Name:    "downloaded_bytes",
 		Help:    "Bytes downloaded",
