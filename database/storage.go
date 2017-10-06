@@ -21,12 +21,17 @@ type AsyncStorage struct {
 	cancelFunc func()
 }
 
-func (s *AsyncStorage) Write(r *Record) {
-	//	s.pending <- r
+func (s *AsyncStorage) Write(r *Record) error {
+	s.pending <- r
+	return nil
 }
 
-func (s *AsyncStorage) BindPort(b *Binding) {
-	s.db.BindPort(b)
+func (s *AsyncStorage) BindPort(b *Binding) error {
+	return s.db.BindPort(b)
+}
+
+func (s *AsyncStorage) GetAllActiveBinding() ([]*Binding, error) {
+	return s.db.GetAllActiveBinding()
 }
 
 // StartFlush not goroutine safe

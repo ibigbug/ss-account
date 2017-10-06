@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -83,7 +84,19 @@ func (m *Manager) String() string {
 
 // Bind creates a port binding and username in database
 func (m *Manager) Bind() error {
-	return nil
+	return DefaultStorage.BindPort(&database.Binding{
+		Username: m.Username,
+		Port:     strconv.Itoa(m.Port),
+		Active:   true,
+	})
+}
+
+func (m *Manager) Unbind() error {
+	return DefaultStorage.BindPort(&database.Binding{
+		Username: m.Username,
+		Port:     "",
+		Active:   false,
+	})
 }
 
 // Start ...
@@ -92,7 +105,10 @@ func (m *Manager) Start() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("listening", l.Addr())
+
+	if err := m.Bind(); err != nil {
+		return err
+	}
 	m.l = l
 
 	go func() {
@@ -126,6 +142,7 @@ func (m *Manager) Start() error {
 // Stop ...
 func (m *Manager) Stop() {
 	m.l.Close()
+	m.Unbind()
 }
 
 // Use metrics and store the user usage

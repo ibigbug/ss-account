@@ -28,13 +28,15 @@ func (b *Binding) String() string {
 // use db drivers which doens't support
 // async write
 type Storage interface {
-	Write(r *Record)
-	BindPort(b *Binding)
+	Write(r *Record) error
+	BindPort(b *Binding) error
+	GetAllActiveBinding() ([]*Binding, error)
 }
 
 // Database provides the write options
 // beyond the underlying db-driver(mysql,redis,etc.)
 type Database interface {
-	Write(r *Record)
-	BindPort(b *Binding)
+	Write(r *Record) error
+	BindPort(b *Binding) error
+	GetAllActiveBinding() ([]*Binding, error)
 }
