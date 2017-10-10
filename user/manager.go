@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -68,7 +67,7 @@ func (m *Managed) Remove(manager *Manager) {
 // Manager manage binding and piping
 type Manager struct {
 	Username       string
-	Port           int
+	Port           string
 	Backend        string
 	NumConnCreated int64
 	NumConnClosed  int64
@@ -79,21 +78,25 @@ type Manager struct {
 }
 
 func (m *Manager) String() string {
-	return fmt.Sprintf("%s,%d,%s,%d,%d,%d,%d", m.Username, m.Port, m.Backend, m.NumConnCreated, m.NumConnClosed, m.BytesUpload, m.BytesDownload)
+	return fmt.Sprintf("%s,%s,%s,%d,%d,%d,%d", m.Username, m.Port, m.Backend, m.NumConnCreated, m.NumConnClosed, m.BytesUpload, m.BytesDownload)
 }
 
 // Bind creates a port binding and username in database
 func (m *Manager) Bind() error {
+	logger.Printf("bind user %s -> %s <- %s\n", m.Username, m.Port, m.Backend)
 	return DefaultStorage.BindPort(&database.Binding{
 		Username: m.Username,
-		Port:     strconv.Itoa(m.Port),
+		Port:     m.Port,
+		Backend:  m.Backend,
 		Active:   true,
 	})
 }
 
+// Unbind remove the backend and port from database
 func (m *Manager) Unbind() error {
 	return DefaultStorage.BindPort(&database.Binding{
 		Username: m.Username,
+		Backend:  "",
 		Port:     "",
 		Active:   false,
 	})
@@ -101,7 +104,7 @@ func (m *Manager) Unbind() error {
 
 // Start ...
 func (m *Manager) Start() error {
-	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", m.Port))
+	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%s", m.Port))
 	if err != nil {
 		return err
 	}

@@ -16,6 +16,7 @@ func (r *Record) String() string {
 type Binding struct {
 	Username string
 	Port     string
+	Backend  string // used for initial restore
 	Active   bool
 }
 

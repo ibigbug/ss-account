@@ -74,11 +74,12 @@ func LoadFromEnv() {
 }
 
 // GetRandomPort ...
-func GetRandomPort() int {
+func GetRandomPort() string {
 	p := rand.Intn(c.PortEnd - c.PortStart)
-	return p + c.PortStart
+	return strconv.Itoa(p + c.PortStart)
 }
 
+// GetRedisOptions return redis options
 func GetRedisOptions() (host, port, pass string, db int) {
 	return c.RedisHost, c.RedisPort, c.RedisPass, c.RedisDB
 }

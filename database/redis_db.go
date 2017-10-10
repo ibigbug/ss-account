@@ -62,8 +62,9 @@ func (db *RedisDatabase) Write(r *Record) error {
 func (db *RedisDatabase) BindPort(b *Binding) error {
 	userKey := fmt.Sprintf("user:%s", b.Username)
 	cmd := db.r.HMSet(userKey, map[string]interface{}{
-		"port":   b.Port,
-		"active": b.Active,
+		"port":    b.Port,
+		"active":  b.Active,
+		"backend": b.Backend,
 	})
 	return cmd.Err()
 }
@@ -88,6 +89,7 @@ func (db *RedisDatabase) GetAllActiveBinding() ([]*Binding, error) {
 			Username: strings.Split(uid, ":")[1],
 			Port:     uVal["port"],
 			Active:   true,
+			Backend:  uVal["backend"],
 		})
 	}
 	return rv, nil

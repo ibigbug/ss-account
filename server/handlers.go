@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/ibigbug/ss-account/user"
 )
@@ -11,17 +10,13 @@ import (
 func registerHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	backend := r.FormValue("backend")
-	portStr := r.FormValue("port")
-	var port int
-	if p, err := strconv.Atoi(portStr); err == nil {
-		port = p
-	}
+	port := r.FormValue("port")
 
 	if port, err := user.AddOneUser(backend, username, port); err != nil {
 		w.WriteHeader(http.StatusPaymentRequired)
 		w.Write([]byte(err.Error()))
 	} else {
-		w.Write([]byte(fmt.Sprintf("%d", port)))
+		w.Write([]byte(fmt.Sprintf("%s", port)))
 	}
 }
 
