@@ -43,7 +43,7 @@ type AsyncStorage struct {
 }
 
 func (s *AsyncStorage) Write(r *Record) {
-	s.pending <- r
+	//	s.pending <- r
 }
 
 // StartFlush not goroutine safe
