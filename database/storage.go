@@ -31,7 +31,7 @@ func NewAsyncStorage() *AsyncStorage {
 		cancelFunc: cancelFunc,
 		db:         &StdoutDatabase{},
 	}
-	s.StartFlush()
+	//	s.StartFlush()
 	return &s
 }
 
