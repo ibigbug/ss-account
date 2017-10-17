@@ -1,10 +1,9 @@
 FROM golang:1.9
 
-WORKDIR /go/src/app
+WORKDIR $HOME/go/src/github.com/ibigbug/ss-account
 
 COPY . .
 
-RUN go-wrapper download
-RUN go-wrapper install
+RUN go build -o app main.go
 
-CMD ["go-warpper", "run"]
+CMD ["app"]

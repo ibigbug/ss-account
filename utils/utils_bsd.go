@@ -1,3 +1,5 @@
+// +build bsd darwin
+
 package utils
 
 import (
