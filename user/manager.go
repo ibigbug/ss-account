@@ -212,7 +212,7 @@ func (m *Manager) closeConn(c net.Conn) {
 func (m *Manager) getMetricsTags() []string {
 	return []string{
 		m.Username,
-		fmt.Sprintf("%d", m.Port),
+		m.Port,
 		m.Backend,
 	}
 }
