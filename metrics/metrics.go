@@ -26,20 +26,18 @@ var ConnClosedCounter = prometheus.NewCounterVec(
 	tags,
 )
 
-var BytesUploadVec = prometheus.NewHistogramVec(
-	prometheus.HistogramOpts{
-		Name:    "uploaded_bytes",
-		Help:    "Bytes uploaded",
-		Buckets: []float64{.005, .01, .025, .05},
+var BytesUploadVec = prometheus.NewCounterVec(
+	prometheus.CounterOpts{
+		Name: "uploaded_bytes",
+		Help: "Bytes uploaded",
 	},
 	tags,
 )
 
-var BytesDownloadVec = prometheus.NewHistogramVec(
-	prometheus.HistogramOpts{
-		Name:    "downloaded_bytes",
-		Help:    "Bytes downloaded",
-		Buckets: []float64{.005, .01, .025, .05},
+var BytesDownloadVec = prometheus.NewCounterVec(
+	prometheus.CounterOpts{
+		Name: "downloaded_bytes",
+		Help: "Bytes downloaded",
 	},
 	tags,
 )

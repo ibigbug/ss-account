@@ -10,7 +10,6 @@ func NewAsyncStorage(db Database) *AsyncStorage {
 		cancelFunc: cancelFunc,
 		db:         db,
 	}
-	//	s.StartFlush()
 	return &s
 }
 
@@ -22,7 +21,7 @@ type AsyncStorage struct {
 }
 
 func (s *AsyncStorage) Write(r *Record) error {
-	s.pending <- r
+	go s.db.Write(r)
 	return nil
 }
 
@@ -45,7 +44,12 @@ func (s *AsyncStorage) StartFlush() {
 			case r := <-s.pending:
 				s.db.Write(r)
 			default:
+				s.StopFlush()
 			}
 		}
 	}()
+}
+
+func (s *AsyncStorage) StopFlush() {
+	s.cancelFunc()
 }

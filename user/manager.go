@@ -153,10 +153,10 @@ func (m *Manager) Stop() {
 func (m *Manager) Use(n int, dir Direction) {
 	if dir == DirectionUpload {
 		atomic.AddInt64(&m.BytesUpload, int64(n))
-		metrics.BytesUploadVec.WithLabelValues(m.getMetricsTags()...).Observe(float64(n))
+		metrics.BytesUploadVec.WithLabelValues(m.getMetricsTags()...).Add(float64(n))
 	} else {
 		atomic.AddInt64(&m.BytesDownload, int64(n))
-		metrics.BytesDownloadVec.WithLabelValues(m.getMetricsTags()...).Observe(float64(n))
+		metrics.BytesDownloadVec.WithLabelValues(m.getMetricsTags()...).Add(float64(n))
 	}
 
 	DefaultStorage.Write(&database.Record{
