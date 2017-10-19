@@ -23,5 +23,7 @@ func init() {
 	http.HandleFunc("/deregister", deregisterHandler)
 	http.HandleFunc("/usage", allManaged)
 
+	http.Handle("/dashboard/", http.StripPrefix("/dashboard/", http.FileServer(http.Dir("public"))))
+
 	http.Handle("/metrics", prometheus.Handler())
 }

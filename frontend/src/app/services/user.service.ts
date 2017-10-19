@@ -4,7 +4,7 @@ import { Observable } from "rxjs/Observable";
 import 'rxjs/add/operator/map';
 import { User } from "../types/types";
 
-const backend = 'http://dev:9000'
+const backend = `//${location.host}`
 
 @Injectable()
 export class UserService {
