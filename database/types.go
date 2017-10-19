@@ -24,6 +24,19 @@ func (b *Binding) String() string {
 	return fmt.Sprintf("%s <-> %s, %v", b.Username, b.Port, b.Active)
 }
 
+type u map[int]int64
+type Usage struct {
+	Daily   u
+	Monthly u
+	Yearly  u
+	Total   u
+}
+
+type UserUsage struct {
+	*Binding
+	*Usage
+}
+
 // Storage provides a middle layer that
 // support/manage async write in case we
 // use db drivers which doens't support
@@ -32,6 +45,7 @@ type Storage interface {
 	Write(r *Record) error
 	BindPort(b *Binding) error
 	GetAllActiveBinding() ([]*Binding, error)
+	GetAllUserUsage() ([]*UserUsage, error)
 }
 
 // Database provides the write options
@@ -40,4 +54,5 @@ type Database interface {
 	Write(r *Record) error
 	BindPort(b *Binding) error
 	GetAllActiveBinding() ([]*Binding, error)
+	GetAllUserUsage() ([]*UserUsage, error)
 }

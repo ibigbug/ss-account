@@ -33,6 +33,10 @@ func (s *AsyncStorage) GetAllActiveBinding() ([]*Binding, error) {
 	return s.db.GetAllActiveBinding()
 }
 
+func (s *AsyncStorage) GetAllUserUsage() ([]*UserUsage, error) {
+	return s.db.GetAllUserUsage()
+}
+
 // StartFlush not goroutine safe
 func (s *AsyncStorage) StartFlush() {
 	s.ctx, s.cancelFunc = context.WithCancel(s.ctx)

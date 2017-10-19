@@ -69,6 +69,42 @@ func (db *RedisDatabase) BindPort(b *Binding) error {
 	return cmd.Err()
 }
 
+func (db *RedisDatabase) GetUser(uid string) (*Binding, error) {
+	u := db.r.HGetAll(uid)
+	if u.Err() != nil {
+		return nil, u.Err()
+	}
+	uVal := u.Val()
+	active, _ := strconv.ParseBool(uVal["active"])
+
+	return &Binding{
+		Username: strings.Split(uid, ":")[1],
+		Port:     uVal["port"],
+		Active:   active,
+		Backend:  uVal["backend"],
+	}, nil
+}
+
+func (db *RedisDatabase) GetUsage(uid string) (*Usage, error) {
+	username := strings.SplitN(uid, ":", 2)[1]
+
+	usageKey := fmt.Sprintf("usage:%s", username)
+	usage := db.r.HGetAll(usageKey)
+	if usage.Err() != nil {
+		return nil, usage.Err()
+	}
+
+	up, _ := strconv.ParseInt(usage.Val()["0"], 10, 0)
+	down, _ := strconv.ParseInt(usage.Val()["1"], 10, 0)
+
+	return &Usage{
+		Total: u{
+			0: up,
+			1: down,
+		},
+	}, nil
+}
+
 func (db *RedisDatabase) GetAllActiveBinding() ([]*Binding, error) {
 	users := db.r.Keys("user:*")
 	if users.Err() != nil {
@@ -77,20 +113,30 @@ func (db *RedisDatabase) GetAllActiveBinding() ([]*Binding, error) {
 	var rv []*Binding
 
 	for _, uid := range users.Val() {
-		u := db.r.HGetAll(uid)
-		if u.Err() != nil {
-			continue
+		u, err := db.GetUser(uid)
+		if err != nil {
+			return nil, err
 		}
-		uVal := u.Val()
-		if active, _ := strconv.ParseBool(uVal["active"]); !active {
-			continue
+		rv = append(rv, u)
+	}
+	return rv, nil
+}
+
+func (db *RedisDatabase) GetAllUserUsage() ([]*UserUsage, error) {
+	users := db.r.Keys("user:*")
+	if users.Err() != nil {
+		return nil, users.Err()
+	}
+	var rv []*UserUsage
+	for _, uid := range users.Val() {
+		if user, err := db.GetUser(uid); err == nil {
+			if usage, err := db.GetUsage(uid); err == nil {
+				rv = append(rv, &UserUsage{
+					Binding: user,
+					Usage:   usage,
+				})
+			}
 		}
-		rv = append(rv, &Binding{
-			Username: strings.Split(uid, ":")[1],
-			Port:     uVal["port"],
-			Active:   true,
-			Backend:  uVal["backend"],
-		})
 	}
 	return rv, nil
 }
