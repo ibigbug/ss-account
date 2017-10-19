@@ -1,0 +1,4 @@
+<h3 class="first">Usage Table</h3>
+<p-dataTable [value]="users" [loading]="loading">
+    <p-column *ngFor="let col of cols" [field]="col.field" [header]="col.header"></p-column>
+</p-dataTable>

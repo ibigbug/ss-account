@@ -1,6 +1,7 @@
 package user
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -36,6 +37,10 @@ type Managed struct {
 	mrs []*Manager
 }
 
+func (m *Managed) MarshalJSON() ([]byte, error) {
+	return json.Marshal(m.mrs)
+}
+
 func (m *Managed) String() string {
 	var s []string
 	for _, mr := range m.mrs {
@@ -66,13 +71,14 @@ func (m *Managed) Remove(manager *Manager) {
 
 // Manager manage binding and piping
 type Manager struct {
-	Username       string
-	Port           string
-	Backend        string
-	NumConnCreated int64
-	NumConnClosed  int64
-	BytesUpload    int64
-	BytesDownload  int64
+	Username       string `json:"username,omitempty"`
+	Port           string `json:"port,omitempty"`
+	Backend        string `json:"backend,omitempty"`
+	NumConnCreated int64  `json:"num_conn_created,omitempty"`
+	NumConnClosed  int64  `json:"num_conn_closed,omitempty"`
+	BytesUpload    int64  `json:"bytes_upload"`
+	BytesDownload  int64  `json:"bytes_download"`
+	Active         bool   `json:"active"`
 
 	l net.Listener
 }

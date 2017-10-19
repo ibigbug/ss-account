@@ -35,5 +35,10 @@ func deregisterHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func allManaged(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(user.DefaultManaged.String()))
+	if usage, err := user.GetAllUserUsage(); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else {
+		Jsonify(w, usage, true)
+	}
 }
