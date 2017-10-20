@@ -1,7 +1,7 @@
 FROM golang:1.9 as gobuilder
 WORKDIR /go/src/github.com/ibigbug/ss-account
 COPY . .
-RUN go build -o app main.go
+RUN CGO_ENABLED=0 go build -a -o app -ldflags="-s -w" main.go
 
 FROM node:8 as nodebuilder
 WORKDIR /frontend
