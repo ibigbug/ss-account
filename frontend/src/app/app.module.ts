@@ -1,11 +1,12 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, APP_INITIALIZER } from '@angular/core';
 
-import { MenubarModule, DataTableModule, ButtonModule, SharedModule } from "primeng/primeng";
+import { MenubarModule, DataTableModule, ButtonModule, SharedModule, InputTextModule, MessagesModule } from "primeng/primeng";
 
 import { AppComponent } from './app.component';
 import { UsageTableComponent } from './usage-table.component';
 import { HttpModule } from '@angular/http';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -19,6 +20,9 @@ import { HttpModule } from '@angular/http';
     DataTableModule,
     SharedModule,
     HttpModule,
+    InputTextModule,
+    FormsModule,
+    MessagesModule,
   ],
   providers: [
   ],
