@@ -1,22 +1,25 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/ibigbug/ss-account/user"
 )
 
 func registerHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		AllowCors(w)
+		return
+	}
 	username := r.FormValue("username")
 	backend := r.FormValue("backend")
 	port := r.FormValue("port")
 
-	if port, err := user.AddOneUser(backend, username, port); err != nil {
-		w.WriteHeader(http.StatusPaymentRequired)
-		w.Write([]byte(err.Error()))
+	if _, err := user.AddOneUser(backend, username, port); err != nil {
+		WriteError(w, err, http.StatusPaymentRequired, true)
 	} else {
-		w.Write([]byte(fmt.Sprintf("%s", port)))
+		u := user.GetManagerByUsername(username)
+		Jsonify(w, u, true)
 	}
 }
 
@@ -35,6 +38,10 @@ func deregisterHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func allManaged(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		AllowCors(w)
+		return
+	}
 	if usage, err := user.GetAllUserUsage(); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

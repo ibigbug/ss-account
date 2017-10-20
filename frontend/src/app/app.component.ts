@@ -11,7 +11,7 @@ export class AppComponent {
 
   ngOnInit() {
     this.items = [{
-      label: 'TV', icon: 'fa-check',
+      label: 'Home', icon: 'fa-transgender-alt',
     }]
   }
 }

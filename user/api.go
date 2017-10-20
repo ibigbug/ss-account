@@ -17,7 +17,7 @@ func AddOneUser(backend, username, port string) (p string, err error) {
 	m := Manager{
 		Username: username,
 		Backend:  backend,
-		Port:     port,
+		Port:     p,
 	}
 
 	if err = m.Bind(); err != nil {

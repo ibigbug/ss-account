@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -89,6 +90,13 @@ func (m *Manager) String() string {
 
 // Bind creates a port binding and username in database
 func (m *Manager) Bind() error {
+	DefaultManaged.Lock()
+	defer DefaultManaged.Unlock()
+	for _, u := range DefaultManaged.mrs {
+		if u.Port == m.Port || u.Username == m.Username {
+			return errors.New("Username or Port already existed")
+		}
+	}
 	logger.Printf("bind user %s -> %s <- %s\n", m.Username, m.Port, m.Backend)
 	return DefaultStorage.BindPort(&database.Binding{
 		Username: m.Username,
