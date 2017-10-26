@@ -13,6 +13,7 @@ RUN ./node_modules/.bin/ng build --prod --base-href /dashboard/
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 WORKDIR /root/
+ENV GODEBUG=gctrace=1
 COPY --from=gobuilder /go/src/github.com/ibigbug/ss-account/app .
 COPY --from=nodebuilder /frontend/dist/ ./public
 CMD [ "./app" ]
