@@ -1,0 +1,7 @@
+FROM golang:1.9
+
+
+WORKDIR /go/src/github.com/ibigbug/ss-account
+COPY . .
+RUN go test -coverpkg=./config,./server,./utils,./database,./metrics,./user -c -tags testrunmain .
+

@@ -1,6 +1,9 @@
 package database
 
-import "context"
+import (
+	"context"
+	"sync"
+)
 
 func NewAsyncStorage(db Database) *AsyncStorage {
 	ctx, cancelFunc := context.WithCancel(context.Background())
@@ -9,19 +12,25 @@ func NewAsyncStorage(db Database) *AsyncStorage {
 		ctx:        ctx,
 		cancelFunc: cancelFunc,
 		db:         db,
+		cond:       sync.NewCond(&sync.Mutex{}),
 	}
+	s.StartFlush()
 	return &s
 }
 
 type AsyncStorage struct {
 	pending    chan *Record
 	db         Database
+	cond       *sync.Cond
 	ctx        context.Context
 	cancelFunc func()
 }
 
 func (s *AsyncStorage) Write(r *Record) error {
-	go s.db.Write(r)
+	s.cond.L.Lock()
+	s.pending <- r
+	s.cond.L.Unlock()
+	s.cond.Signal()
 	return nil
 }
 
@@ -42,6 +51,12 @@ func (s *AsyncStorage) StartFlush() {
 	s.ctx, s.cancelFunc = context.WithCancel(s.ctx)
 	go func() {
 		for {
+			s.cond.L.Lock()
+			for len(s.pending) == 0 {
+				s.cond.Wait()
+			}
+			s.cond.L.Unlock()
+
 			select {
 			case <-s.ctx.Done():
 				return
