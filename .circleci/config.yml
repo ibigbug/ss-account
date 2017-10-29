@@ -36,13 +36,13 @@ jobs:
       - run:
           name: Register username
           command: |
-            docker run --network container:ss-account appropriate/curl '127.0.0.1:9000/register?username=test&backend=127.0.0.1:32384&port=9001'
+            docker run --network container:ss-account appropriate/curl -s '127.0.0.1:9000/register?username=test&backend=127.0.0.1:32384&port=9001'
             docker-compose logs
 
       - run:
           name: Run test
           command: |
-            docker run --network container:ss-account appropriate/curl --socks5-hostname 127.0.0.1:1080 --retry 10 --retry-connrefused -s http://ip.cn
+            docker run --network container:ss-account appropriate/curl --socks5-hostname 127.0.0.1:1080 --retry 10 --retry-connrefused -s http://127.0.0.1:8080
 
       - run:
           name: Generate artifacts
@@ -52,9 +52,10 @@ jobs:
       - run:
           name: Fetch artifacts
           command: |
-            docker cp ss-account:/go/src/github.com/ibigbug/ss-account/tests/system.out ./system.out
+            docker cp ss-account:/go/src/github.com/ibigbug/ss-account/tests/system.out $CIRCLE_ARTIFACTS/system.out
+            docker run --network container:ss-account appropriate/curl --socks5-hostname 127.0.0.1:1080 --retry 10 --retry-connrefused -s http://127.0.0.1:9000/usage > $CIRCLE_ARTIFACTS/usage.json
 
       - run:
           when: on_success
           command: |
-            bash <(curl -s https://codecov.io/bash) -f system.out
+            bash <(curl -s https://codecov.io/bash) -f $$CIRCLE_ARTIFACTS/system.out
