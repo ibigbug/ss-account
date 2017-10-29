@@ -6,10 +6,11 @@ services:
       context: .
       dockerfile: ./tests/Dockerfile.test
     command: ./ss-account.test -test.coverprofile=./tests/system.out -test.run '^TestRunMain$$'
-    network_mode: "service:ss-local"
+    network_mode: "service:ss-server"
 
   redis:
     image: redis
+    network_mode: "service:ss-account"
 
   ss-server:
     image: ibigbug/shadowsocks-docker
@@ -18,5 +19,5 @@ services:
   ss-local:
     container_name: ss-local
     image: ibigbug/shadowsocks-docker
-    command: ["ss-local", "-l", "1080", "-s", "127.0.0.1", "-p", "32384", "-k", "password", "-m", "aes-256-cfb", "--plugin", "obfs-local", "--plugin-opts", "obfs=http;obfs-host=www.bing.com"]
+    command: ["ss-local", "-l", "1080", "-s", "127.0.0.1", "-p", "9001", "-k", "password", "-m", "aes-256-cfb", "--plugin", "obfs-local", "--plugin-opts", "obfs=http;obfs-host=www.bing.com"]
     network_mode: "service:ss-server"
