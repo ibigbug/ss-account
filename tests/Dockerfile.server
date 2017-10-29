@@ -1,0 +1,5 @@
+FROM python:2.7
+
+COPY ./tests.py /
+
+CMD ["python", "/tests.py"]
