@@ -42,7 +42,7 @@ jobs:
       - run:
           name: Run test
           command: |
-            docker run --network container:ss-account appropriate/curl --socks5-hostname 127.0.0.1:1080 --retry 10 --retry-connrefused -s http://127.0.0.1:8080
+            docker run --network container:ss-account appropriate/curl --socks5-hostname 127.0.0.1:1080 --retry 10 --retry-connrefused http://127.0.0.1:8080 -o /dev/null > speed-summary.txt 2>&1
 
       - run:
           name: Generate artifacts
@@ -52,10 +52,16 @@ jobs:
       - run:
           name: Fetch artifacts
           command: |
-            docker cp ss-account:/go/src/github.com/ibigbug/ss-account/tests/system.out $CIRCLE_ARTIFACTS/system.out
-            docker run --network container:ss-account appropriate/curl --socks5-hostname 127.0.0.1:1080 --retry 10 --retry-connrefused -s http://127.0.0.1:9000/usage > $CIRCLE_ARTIFACTS/usage.json
+            docker cp ss-account:/go/src/github.com/ibigbug/ss-account/tests/system.out system.out
+            docker run --network container:ss-account appropriate/curl --socks5-hostname 127.0.0.1:1080 --retry 10 --retry-connrefused -s http://127.0.0.1:9000/usage > usage.json
 
       - run:
           when: on_success
           command: |
-            bash <(curl -s https://codecov.io/bash) -f $$CIRCLE_ARTIFACTS/system.out
+            bash <(curl -s https://codecov.io/bash) -f system.out
+
+      - store_artifacts:
+          path: ./usage.json
+
+      - store_artifacts:
+          path: ./speed-summary.txt
