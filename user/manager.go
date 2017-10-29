@@ -13,6 +13,7 @@ import (
 
 	"github.com/ibigbug/ss-account/database"
 	"github.com/ibigbug/ss-account/metrics"
+	"github.com/ibigbug/ss-account/utils"
 )
 
 type Direction int
@@ -184,10 +185,21 @@ func (m *Manager) Use(n int, dir Direction) {
 // bc for backend conn, c for client conn
 func (m *Manager) pipeWithMetrics(bc, c net.Conn) {
 	// c -> bc
-	b1 := make([]byte, 1024*1024)
+	var b1 []byte
+	select {
+	case b1 = <-utils.FreeList:
+	default:
+		b1 = make([]byte, 1024)
+	}
 	go func() {
 		defer c.Close()
 		defer bc.Close()
+		defer func() {
+			select {
+			case utils.FreeList <- b1:
+			default:
+			}
+		}()
 		for {
 			n, err := c.Read(b1)
 			if n > 0 {
@@ -200,10 +212,22 @@ func (m *Manager) pipeWithMetrics(bc, c net.Conn) {
 		}
 	}()
 
-	b2 := make([]byte, 1024*1024)
+	// bc -> c
+	var b2 []byte
+	select {
+	case b2 = <-utils.FreeList:
+	default:
+		b2 = make([]byte, 1024)
+	}
 	go func() {
 		defer m.closeConn(c)
 		defer bc.Close()
+		defer func() {
+			select {
+			case utils.FreeList <- b2:
+			default:
+			}
+		}()
 		for {
 			n, err := bc.Read(b2)
 			if n > 0 {
