@@ -36,7 +36,8 @@ jobs:
       - run:
           name: Register username
           command: |
-            docker run --network container:ss-account appropriate/curl 127.0.0.1:9000/register?username=test&backend=127.0.0.1:32384&port=9001
+            docker run --network container:ss-account appropriate/curl '127.0.0.1:9000/register?username=test&backend=127.0.0.1:32384&port=9001'
+            docker-compose logs
 
       - run:
           name: Run test
