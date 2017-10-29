@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"fmt"
 	"sync"
 )
 
@@ -15,7 +14,6 @@ func NewAsyncStorage(db Database) *AsyncStorage {
 		db:         db,
 		cond:       sync.NewCond(&sync.Mutex{}),
 	}
-	s.StartFlush()
 	return &s
 }
 
@@ -28,12 +26,7 @@ type AsyncStorage struct {
 }
 
 func (s *AsyncStorage) Write(r *Record) error {
-	s.cond.L.Lock()
-	fmt.Println("enqueue, len q", len(s.pending))
-	s.pending <- r
-	s.cond.L.Unlock()
-	fmt.Println("notifying, len q", len(s.pending))
-	s.cond.Broadcast()
+	go s.db.Write(r)
 	return nil
 }
 
@@ -54,17 +47,21 @@ func (s *AsyncStorage) StartFlush() {
 	s.ctx, s.cancelFunc = context.WithCancel(s.ctx)
 	go func() {
 		for {
-			s.cond.L.Lock()
-			for len(s.pending) == 0 {
-				s.cond.Wait()
+			if len(s.pending) == 0 {
+				s.cond.L.Lock()
+				for len(s.pending) == 0 {
+					s.cond.Wait()
+				}
+				s.cond.L.Unlock()
 			}
+
 			select {
 			case <-s.ctx.Done():
 				return
 			case r := <-s.pending:
 				s.db.Write(r)
+			default:
 			}
-			s.cond.L.Unlock()
 		}
 	}()
 }
