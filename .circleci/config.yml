@@ -34,9 +34,14 @@ jobs:
             docker-compose up -d
 
       - run:
+          name: Register username
+          command: |
+            docker run --network container:ss-account appropriate/curl 127.0.0.1:9000/register?username=test&backend=127.0.0.1:32384&port=9001
+
+      - run:
           name: Run test
           command: |
-            docker run --network container:ss-local appropriate/curl --socks5-hostname 127.0.0.1:1080 --retry 10 --retry-connrefused -s http://ip.cn
+            docker run --network container:ss-account appropriate/curl --socks5-hostname 127.0.0.1:1080 --retry 10 --retry-connrefused -s http://ip.cn
 
       - run:
           name: Generate artifacts
