@@ -1,6 +1,8 @@
 package user
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -36,6 +38,10 @@ type Managed struct {
 	mrs []*Manager
 }
 
+func (m *Managed) MarshalJSON() ([]byte, error) {
+	return json.Marshal(m.mrs)
+}
+
 func (m *Managed) String() string {
 	var s []string
 	for _, mr := range m.mrs {
@@ -66,13 +72,14 @@ func (m *Managed) Remove(manager *Manager) {
 
 // Manager manage binding and piping
 type Manager struct {
-	Username       string
-	Port           string
-	Backend        string
-	NumConnCreated int64
-	NumConnClosed  int64
-	BytesUpload    int64
-	BytesDownload  int64
+	Username       string `json:"username,omitempty"`
+	Port           string `json:"port,omitempty"`
+	Backend        string `json:"backend,omitempty"`
+	NumConnCreated int64  `json:"num_conn_created,omitempty"`
+	NumConnClosed  int64  `json:"num_conn_closed,omitempty"`
+	BytesUpload    int64  `json:"bytes_upload"`
+	BytesDownload  int64  `json:"bytes_download"`
+	Active         bool   `json:"active"`
 
 	l net.Listener
 }
@@ -83,6 +90,13 @@ func (m *Manager) String() string {
 
 // Bind creates a port binding and username in database
 func (m *Manager) Bind() error {
+	DefaultManaged.Lock()
+	defer DefaultManaged.Unlock()
+	for _, u := range DefaultManaged.mrs {
+		if u.Port == m.Port || u.Username == m.Username {
+			return errors.New("Username or Port already existed")
+		}
+	}
 	logger.Printf("bind user %s -> %s <- %s\n", m.Username, m.Port, m.Backend)
 	return DefaultStorage.BindPort(&database.Binding{
 		Username: m.Username,

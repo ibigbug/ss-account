@@ -1,0 +1,67 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: buildpack-deps
+    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
+    steps:
+      - checkout
+
+      - run:
+          name: Install Docker Compose
+          command: |
+            set -x
+            curl -L https://github.com/docker/compose/releases/download/1.11.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+            chmod +x /usr/local/bin/docker-compose 
+      - run:
+          name: Install Docker client
+          command: |
+            set -x
+            VER="17.03.0-ce"
+            curl -L -o /tmp/docker-$VER.tgz https://get.docker.com/builds/Linux/x86_64/docker-$VER.tgz
+            tar -xz -C /tmp -f /tmp/docker-$VER.tgz
+            mv /tmp/docker/* /usr/bin
+
+      - setup_remote_docker
+
+      - run:
+          name: Build Image
+          command: docker-compose build
+
+      - run:
+          name: Start container
+          command: |
+            docker-compose up -d
+
+      - run:
+          name: Register username
+          command: |
+            docker run --network container:ss-account appropriate/curl -s '127.0.0.1:9000/register?username=test&backend=127.0.0.1:32384&port=9001'
+            docker-compose logs
+
+      - run:
+          name: Run test
+          command: |
+            docker run --network container:ss-account appropriate/curl --socks5-hostname 127.0.0.1:1080 --retry 10 --retry-connrefused http://127.0.0.1:8080 -o /dev/null > speed-summary.txt 2>&1
+
+      - run:
+          name: Generate artifacts
+          command: |
+            docker restart ss-account
+
+      - run:
+          name: Fetch artifacts
+          command: |
+            docker cp ss-account:/go/src/github.com/ibigbug/ss-account/tests/system.out system.out
+            docker run --network container:ss-account appropriate/curl --socks5-hostname 127.0.0.1:1080 --retry 10 --retry-connrefused -s http://127.0.0.1:9000/usage > usage.json
+
+      - run:
+          when: on_success
+          command: |
+            bash <(curl -s https://codecov.io/bash) -f system.out
+
+      - store_artifacts:
+          path: ./usage.json
+
+      - store_artifacts:
+          path: ./speed-summary.txt

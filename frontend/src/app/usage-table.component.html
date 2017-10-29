@@ -1,0 +1,16 @@
+<h3 class="first">Usage Table</h3>
+<p-dataTable [value]="users" [loading]="loading">
+    <p-header>
+        <p-messages></p-messages>
+        <div class="ui-inputgroup">
+            <input type="text" pInputText placeholder="Backend" [(ngModel)]="user.backend" />
+        </div>
+        <div class="ui-inputgroup">
+            <input type="text" pInputText placeholder="Username" [(ngModel)]="user.username">
+        </div>
+        <div class="ui-inputgroup">
+            <button pButton type="button" (click)="createUser()" label="Add" [disabled]="!isValidForm()"></button>
+        </div>
+    </p-header>
+    <p-column *ngFor="let col of cols" [field]="col.field" [header]="col.header"></p-column>
+</p-dataTable>

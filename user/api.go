@@ -17,11 +17,8 @@ func AddOneUser(backend, username, port string) (p string, err error) {
 	m := Manager{
 		Username: username,
 		Backend:  backend,
-		Port:     port,
-	}
-
-	if err = m.Bind(); err != nil {
-		return
+		Port:     p,
+		Active:   true,
 	}
 
 	if err = m.Start(); err != nil {
@@ -31,4 +28,23 @@ func AddOneUser(backend, username, port string) (p string, err error) {
 	DefaultManaged.Add(&m)
 
 	return
+}
+
+func GetAllUserUsage() ([]*Manager, error) {
+	usage, err := DefaultStorage.GetAllUserUsage()
+	if err != nil {
+		return nil, err
+	}
+	var rv []*Manager
+	for _, u := range usage {
+		rv = append(rv, &Manager{
+			Username:      u.Username,
+			Port:          u.Port,
+			Backend:       u.Backend,
+			Active:        u.Active,
+			BytesDownload: u.Total[1],
+			BytesUpload:   u.Total[0],
+		})
+	}
+	return rv, nil
 }
