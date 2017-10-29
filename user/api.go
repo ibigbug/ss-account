@@ -20,10 +20,6 @@ func AddOneUser(backend, username, port string) (p string, err error) {
 		Port:     p,
 	}
 
-	if err = m.Bind(); err != nil {
-		return
-	}
-
 	if err = m.Start(); err != nil {
 		return
 	}
