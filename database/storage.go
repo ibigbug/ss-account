@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"sync"
 )
 
@@ -28,9 +29,11 @@ type AsyncStorage struct {
 
 func (s *AsyncStorage) Write(r *Record) error {
 	s.cond.L.Lock()
+	fmt.Println("enqueue, len q", len(s.pending))
 	s.pending <- r
 	s.cond.L.Unlock()
-	s.cond.Signal()
+	fmt.Println("notifying, len q", len(s.pending))
+	s.cond.Broadcast()
 	return nil
 }
 
@@ -55,16 +58,13 @@ func (s *AsyncStorage) StartFlush() {
 			for len(s.pending) == 0 {
 				s.cond.Wait()
 			}
-			s.cond.L.Unlock()
-
 			select {
 			case <-s.ctx.Done():
 				return
 			case r := <-s.pending:
 				s.db.Write(r)
-			default:
-				s.StopFlush()
 			}
+			s.cond.L.Unlock()
 		}
 	}()
 }

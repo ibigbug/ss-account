@@ -185,20 +185,23 @@ func (m *Manager) Use(n int, dir Direction) {
 // bc for backend conn, c for client conn
 func (m *Manager) pipeWithMetrics(bc, c net.Conn) {
 	// c -> bc
-	var b1 [1024]byte
+	var b1 []byte
 	select {
 	case b1 = <-utils.FreeList:
 	default:
-		b1 = [1024]byte{}
+		b1 = make([]byte, 1024)
 	}
 	go func() {
 		defer c.Close()
 		defer bc.Close()
 		defer func() {
-			utils.FreeList <- b1
+			select {
+			case utils.FreeList <- b1:
+			default:
+			}
 		}()
 		for {
-			n, err := c.Read(b1[:])
+			n, err := c.Read(b1)
 			if n > 0 {
 				m.Use(n, DirectionUpload)
 				bc.Write(b1[:n])
@@ -209,20 +212,24 @@ func (m *Manager) pipeWithMetrics(bc, c net.Conn) {
 		}
 	}()
 
-	var b2 [1024]byte
+	// bc -> c
+	var b2 []byte
 	select {
 	case b2 = <-utils.FreeList:
 	default:
-		b2 = [1024]byte{}
+		b2 = make([]byte, 1024)
 	}
 	go func() {
 		defer m.closeConn(c)
 		defer bc.Close()
 		defer func() {
-			utils.FreeList <- b2
+			select {
+			case utils.FreeList <- b2:
+			default:
+			}
 		}()
 		for {
-			n, err := bc.Read(b2[:])
+			n, err := bc.Read(b2)
 			if n > 0 {
 				m.Use(n, DirectionDownload)
 				c.Write(b2[:n])
