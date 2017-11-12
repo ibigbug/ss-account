@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,6 +12,7 @@ import (
 	raven "github.com/getsentry/raven-go"
 	"github.com/ibigbug/ss-account/config"
 	"github.com/ibigbug/ss-account/server"
+	stripe "github.com/stripe/stripe-go"
 )
 
 var (
@@ -24,6 +25,9 @@ var (
 	redisDB   = flag.Int("redis-db", 0, "redis database")
 
 	raveDSN = flag.String("sentry-dsn", "", "sentry DSN")
+
+	stripeKey    = flag.String("stripe-key", "", "Stripe API key")
+	stripeSecret = flag.String("stripe-secret", "", "Stripe secret")
 )
 
 func waitForSignal() {
@@ -31,7 +35,7 @@ func waitForSignal() {
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
 	sig := <-sigs
-	fmt.Printf("Got sig: %v, exiting\n", sig)
+	log.Printf("Got sig: %v, exiting\n", sig)
 }
 
 func main() {
@@ -42,12 +46,16 @@ func main() {
 		*redisPass,
 		*redisDB,
 		*portRange,
+		*stripeKey,
+		*stripeSecret,
 	)
 	config.LoadFromEnv()
 
 	if *bind == "" {
 		*bind = "127.0.0.1:9000"
 	}
+
+	stripe.Key = *stripeSecret
 
 	raven.SetDSN(*raveDSN)
 	go func() {

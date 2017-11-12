@@ -17,6 +17,9 @@ type Config struct {
 	RedisPort string
 	RedisPass string
 	RedisDB   int
+
+	StripeKey    string
+	StripeSecret string
 }
 
 func (c *Config) setPortRange(portRange string) {
@@ -45,13 +48,17 @@ func LoadFromFlags(
 	redisPort,
 	redisPass string,
 	redisDB int,
-	portRange string) {
+	portRange string,
+	stripeKey,
+	stripeSecret string) {
 
 	c.setPortRange(portRange)
 	c.RedisHost = redisHost
 	c.RedisPort = redisPort
 	c.RedisPass = redisPass
 	c.RedisDB = redisDB
+	c.StripeKey = stripeKey
+	c.StripeSecret = stripeSecret
 }
 
 // LoadFromEnv ...
@@ -71,6 +78,13 @@ func LoadFromEnv() {
 	if p := os.Getenv("REDISS_DB"); p != "" {
 		c.RedisPass = p
 	}
+
+	if p := os.Getenv("STRIPE_KEY"); p != "" {
+		c.StripeKey = p
+	}
+	if p := os.Getenv("STRIPE_SECRET"); p != "" {
+		c.StripeSecret = p
+	}
 }
 
 // GetRandomPort ...
@@ -82,6 +96,10 @@ func GetRandomPort() string {
 // GetRedisOptions return redis options
 func GetRedisOptions() (host, port, pass string, db int) {
 	return c.RedisHost, c.RedisPort, c.RedisPass, c.RedisDB
+}
+
+func GetStripeKey() string {
+	return c.StripeKey
 }
 
 var c = &Config{}

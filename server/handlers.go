@@ -1,8 +1,13 @@
 package server
 
 import (
+	"html/template"
 	"net/http"
 
+	"github.com/stripe/stripe-go"
+	"github.com/stripe/stripe-go/charge"
+
+	"github.com/ibigbug/ss-account/config"
 	"github.com/ibigbug/ss-account/user"
 )
 
@@ -47,5 +52,38 @@ func allManaged(w http.ResponseWriter, r *http.Request) {
 		return
 	} else {
 		Jsonify(w, usage, true)
+	}
+}
+
+func renderPaymentForm(w http.ResponseWriter, r *http.Request) {
+	t := template.Must(template.ParseFiles("templates/payment.html"))
+	t.Execute(w, config.GetStripeKey())
+}
+
+func paymentHandler(w http.ResponseWriter, r *http.Request) {
+	token := r.FormValue("stripeToken")
+	params := &stripe.ChargeParams{
+		Amount:    5000,
+		Currency:  "cny",
+		Desc:      "Example charge",
+		Statement: "Descriptor",
+	}
+	params.SetSource(token)
+	charge, err := charge.New(params)
+	if err != nil {
+		w.WriteHeader(http.StatusPaymentRequired)
+		w.Write([]byte(err.Error()))
+	} else {
+		if charge.Paid {
+			if port, err := user.AddOneUser("127.0.0.1:3390", "", ""); err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte("Please contact customer service"))
+			} else {
+				w.Write([]byte(port))
+			}
+		} else {
+			w.WriteHeader(http.StatusPaymentRequired)
+			w.Write([]byte(charge.FailMsg))
+		}
 	}
 }

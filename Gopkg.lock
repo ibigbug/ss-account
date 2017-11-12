@@ -61,9 +61,15 @@
   packages = [".","xfs"]
   revision = "e645f4e5aaa8506fc71d6edbc5c4ff02c04c46f2"
 
+[[projects]]
+  name = "github.com/stripe/stripe-go"
+  packages = [".","form","orderitem"]
+  revision = "a705fb222df92bba0cbc4c190bcbebf7dfe0b0cc"
+  version = "v28.6.1"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2e503b16e44f915ce3e8353b477a4218dbd04b55a1c2dc13e9184490854a5b52"
+  inputs-digest = "7ad82c59901f9f0119ff9f779a66ba287ffe558386efb2056fff0efabbb9ea23"
   solver-name = "gps-cdcl"
   solver-version = 1

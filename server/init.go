@@ -17,6 +17,7 @@ func init() {
 	} else {
 		logger = log.New(os.Stderr, "[Server]: ", log.LstdFlags)
 	}
+
 	logger.Println("mounting routers")
 
 	http.HandleFunc("/register", registerHandler)
@@ -24,6 +25,8 @@ func init() {
 	http.HandleFunc("/usage", allManaged)
 
 	http.Handle("/dashboard/", http.StripPrefix("/dashboard/", http.FileServer(http.Dir("public"))))
+	http.HandleFunc("/0.0", renderPaymentForm)
+	http.HandleFunc("/payment-handler", paymentHandler)
 
 	http.Handle("/metrics", prometheus.Handler())
 }
