@@ -6,14 +6,11 @@ import (
 )
 
 func NewAsyncStorage(db Database) *AsyncStorage {
-	ctx, cancelFunc := context.WithCancel(context.Background())
 	s := AsyncStorage{
-		pending:    make(chan *Record, 100),
-		ctx:        ctx,
-		cancelFunc: cancelFunc,
-		db:         db,
-		cond:       sync.NewCond(&sync.Mutex{}),
+		pending: make(chan *Record, 100),
+		db:      db,
 	}
+	s.StartFlush()
 	return &s
 }
 
@@ -26,7 +23,7 @@ type AsyncStorage struct {
 }
 
 func (s *AsyncStorage) Write(r *Record) error {
-	go s.db.Write(r)
+	s.pending <- r
 	return nil
 }
 
@@ -44,28 +41,15 @@ func (s *AsyncStorage) GetAllUserUsage() ([]*UserUsage, error) {
 
 // StartFlush not goroutine safe
 func (s *AsyncStorage) StartFlush() {
-	s.ctx, s.cancelFunc = context.WithCancel(s.ctx)
-	go func() {
-		for {
-			if len(s.pending) == 0 {
-				s.cond.L.Lock()
-				for len(s.pending) == 0 {
-					s.cond.Wait()
-				}
-				s.cond.L.Unlock()
-			}
-
-			select {
-			case <-s.ctx.Done():
-				return
-			case r := <-s.pending:
+	for i := 0; i < 10; i++ {
+		go func() {
+			for r := range s.pending {
 				s.db.Write(r)
-			default:
 			}
-		}
-	}()
+		}()
+	}
 }
 
 func (s *AsyncStorage) StopFlush() {
-	s.cancelFunc()
+	close(s.pending)
 }

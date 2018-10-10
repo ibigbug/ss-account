@@ -9,10 +9,12 @@ services:
     network_mode: "service:ss-server"
 
   redis:
+    container_name: ss-redis
     image: redis
     network_mode: "service:ss-account"
 
   ss-server:
+    container_name: ss-server
     image: ibigbug/shadowsocks-docker
     command: ["ss-server", "-s", "0.0.0.0", "-p", "32384", "-k", "password", "-m", "aes-256-cfb", "--plugin", "obfs-server", "--plugin-opts", "obfs=http"]
 
