@@ -1,0 +1,34 @@
+- hosts: all
+  tasks:
+  - name: Add Docker GPG Key
+    apt_key: url=https://download.docker.com/linux/ubuntu/gpg
+
+  - name: Add Docker APT Repository
+    apt_repository:
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
+
+  - name: Install List of Packages
+    apt:
+      name: "{{ item }}"
+      state: present
+      update_cache: yes
+    with_items:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+      - docker-ce
+      - python-pip
+
+  - name: Install docker-py
+    pip:
+      name: docker-py
+
+  - name: Run ss-account Daemon
+    docker_container:
+      name: ss-account
+      image: ibigbug/ss-account
+      command: ./app 
+      state: started
+      restart_policy: unless-stopped
+      network_mode: host
