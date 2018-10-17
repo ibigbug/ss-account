@@ -2,14 +2,22 @@
 <p-dataTable [value]="users" [loading]="loading">
     <p-header>
         <p-messages></p-messages>
-        <div class="ui-inputgroup">
-            <input type="text" pInputText placeholder="Backend" [(ngModel)]="user.backend" />
-        </div>
-        <div class="ui-inputgroup">
-            <input type="text" pInputText placeholder="Username" [(ngModel)]="user.username">
-        </div>
-        <div class="ui-inputgroup">
-            <button pButton type="button" (click)="createUser()" label="Add" [disabled]="!isValidForm()"></button>
+        <div class="ui-g ui-fluid">
+            <div class="ui-g-12 ui-md-4">
+                <div class="ui-inputgroup">
+                    <input type="text" pInputText placeholder="Backend" [(ngModel)]="user.backend" />
+                </div>
+            </div>
+            <div class="ui-g-12 ui-md-4">
+                <div class="ui-inputgroup">
+                    <input type="text" pInputText placeholder="Username" [(ngModel)]="user.username">
+                </div>
+            </div>
+            <div class="ui-g-12 ui-md-4">
+                <div class="ui-inputgroup">
+                    <button pButton type="button" (click)="createUser()" label="Add" [disabled]="!isValidForm()"></button>
+                </div>
+            </div>
         </div>
     </p-header>
     <p-column *ngFor="let col of cols" [field]="col.field" [header]="col.header"></p-column>

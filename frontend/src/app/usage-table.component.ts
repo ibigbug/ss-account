@@ -40,7 +40,10 @@ export class UsageTableComponent implements OnInit {
     createUser() {
         this.loading = true
         this.userService.createUser(this.user).subscribe(u => {
-            this.users.splice(0, 0, u)
+            let users = [...this.users]
+            users.splice(0, 0, u)
+            this.users = users
+            this.user = new User()
         }, err => {
             this.messageService.add({
                 severity: 'error',

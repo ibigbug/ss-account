@@ -1,5 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule, APP_INITIALIZER } from '@angular/core';
+import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
+import { NgModule } from '@angular/core';
 
 import { MenubarModule, DataTableModule, ButtonModule, SharedModule, InputTextModule, MessagesModule } from "primeng/primeng";
 
@@ -23,6 +24,7 @@ import { FormsModule } from '@angular/forms';
     InputTextModule,
     FormsModule,
     MessagesModule,
+    BrowserAnimationsModule,
   ],
   providers: [
   ],
