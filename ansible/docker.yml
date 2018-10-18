@@ -9,16 +9,9 @@
 
   - name: Install List of Packages
     apt:
-      name: "{{ item }}"
+      name: [u'apt-transport-https', u'ca-certificates', u'curl', u'software-properties-common', u'docker-ce', u'python-pip']
       state: present
       update_cache: yes
-    with_items:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - software-properties-common
-      - docker-ce
-      - python-pip
 
   - name: Install docker-py
     pip:
@@ -28,7 +21,7 @@
     docker_container:
       name: ss-account
       image: ibigbug/ss-account
-      command: ./app 
+      command: ./app
       state: started
       restart_policy: unless-stopped
       network_mode: host
