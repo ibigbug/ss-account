@@ -11,7 +11,6 @@ import { MessageService } from "primeng/components/common/messageservice";
 export class UsageTableComponent implements OnInit {
     loading: boolean;
     users: User[];
-    cols: any[];
 
     user: User; // current user
 
@@ -24,13 +23,6 @@ export class UsageTableComponent implements OnInit {
         this.loading = true
         this.user = new User()
 
-        this.cols = [
-            { field: 'username', header: 'Username' },
-            { field: 'port', header: 'Port' },
-            { field: 'backend', header: 'Backend' },
-            { field: 'bytes_upload', header: 'Bytes Upload' },
-            { field: 'bytes_download', header: 'Bytes Download' },
-        ]
         this.userService.getUsers().subscribe(users => {
             this.loading = false
             this.users = users
