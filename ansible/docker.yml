@@ -1,3 +1,4 @@
+---
 - hosts: all
   tasks:
   - name: Add Docker GPG Key
@@ -9,7 +10,7 @@
 
   - name: Install List of Packages
     apt:
-      name: [u'apt-transport-https', u'ca-certificates', u'curl', u'software-properties-common', u'docker-ce', u'python-pip']
+      name: ['apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'docker-ce', 'python-pip']
       state: present
       update_cache: yes
 
@@ -17,11 +18,12 @@
     pip:
       name: docker-py
 
+  - include_vars: secrets.{{cloud}}.yml
   - name: Run ss-account Daemon
     docker_container:
       name: ss-account
       image: ibigbug/ss-account
-      command: ./app
+      command: ./app -redis-host {{redis_host}} -redis-pass {{redis_pass}}
       state: started
       restart_policy: unless-stopped
       network_mode: host
